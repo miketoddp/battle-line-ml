@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+.env/
+
+# MacOS
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Data files
+data/*.db
+data/*.sqlite
+data/exports/
+
+# Logs
+*.log
+
+# Spark temp
+spark-warehouse/
