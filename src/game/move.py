@@ -11,5 +11,5 @@ from dataclasses import dataclass
 @dataclass(frozen=True)
 class Move:
     player_id: int
-    card_id: int
+    card_index: int
     target_flag: int
