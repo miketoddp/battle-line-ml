@@ -29,3 +29,43 @@ def legal_moves(state: GameState) -> list[Move]:
                         )
                     moves.append(legal_move)
     return moves
+
+def formation_rank(cards: list[Card]) -> tuple:
+    values = []
+    colors = []
+
+    if len(cards) != 3:
+        raise ValueError(f"Expected 3 cards, got {len(cards)}")
+
+    for card in cards:
+        values.append(card.value)
+        colors.append(card.color)
+
+    values.sort()
+    
+    low_card = values[0]
+    is_straight = values[1] == low_card + 1 and values[2] == low_card + 2
+    same_color = len(set(colors)) == 1
+
+    tie_break = values[2]
+
+    if is_straight and same_color:
+        rank = 5 # wedge formation
+    elif len(set(values)) == 1:
+        rank = 4 # phalanx (one value)
+    elif same_color:
+        rank = 3 # battalion (one color)
+        tie_break = sum(values)
+    elif is_straight:
+        rank = 2 # skirmish (straight values)
+    else:
+        rank = 1 # host
+        tie_break = sum(values)
+
+    return (rank, tie_break)
+    
+        
+        
+
+        
+    
