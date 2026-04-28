@@ -63,9 +63,45 @@ def formation_rank(cards: list[Card]) -> tuple:
         tie_break = sum(values)
 
     return (rank, tie_break)
-    
-        
-        
 
+def check_winner(state: GameState, flag: int) -> int | None:
+    if len(state.flags[flag][1]) < 3 \
+    or len(state.flags[flag][2]) < 3:
+        return None
+    
+    player1_flag = formation_rank(state.flags[flag][1])
+    player2_flag = formation_rank(state.flags[flag][2])
+
+    if player1_flag[0] > player2_flag[0]:
+        return 1
+    elif player2_flag[0] > player1_flag[0]:
+        return 2
+    elif player1_flag[1] > player2_flag[1]:
+        return 1
+    elif player2_flag[1] > player1_flag[1]:
+        return 2
+    else:
+        return None  
         
+def is_terminal(state: GameState) -> bool:
+    for player in [1,2]:
+        player_flags = []
+
+        for flag, owner in state.claimed_flags.items():
+            if owner == player:
+                player_flags.append(flag)
+
+        player_flags = set(player_flags)
+
+        if len(player_flags) >= 5:
+            return True
+        
+        elif len(player_flags) >= 3:
+            for start in range(7):
+                if start in player_flags and \
+                start + 1 in player_flags and \
+                start + 2 in player_flags:
+                    return True
+        
+    return False
     
