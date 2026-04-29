@@ -1,5 +1,5 @@
 """
-Deck generation for BAttle Line.
+Deck generation for Battle Line.
 
 Specifies valid cards, deck to draw from, and initial hands.
 Also contains card draw function that returns `None` if deck empty.
