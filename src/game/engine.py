@@ -44,7 +44,17 @@ def initialize_game(seed: int | None = None) -> GameState:
 def update_claims(state: GameState) -> GameState:
     # Loop thru flags, skipping claimed ones...
     # ... check for winner, changing as necessary.
-    ...
+    
+    new_state = deepcopy(state)
+
+    for flag in new_state.claimed_flags:
+        if new_state.claimed_flags[flag] is None:
+            winner = rules.check_winner(new_state, flag)
+
+            if winner is not None:
+                new_state.claimed_flags[flag] = winner
+
+    return new_state
 
 def apply_move(state: GameState, move: Move) -> GameState:
     # Copy state, remove selected card, place on target flag...
