@@ -76,8 +76,11 @@ def apply_move(state: GameState, move: Move) -> GameState:
     
     new_state = update_claims(new_state)
 
-    if rules.is_terminal(new_state) == True:
+    winner = rules.game_winner(new_state)
+
+    if winner is not None:
         new_state.terminal = True
+        new_state.winner = winner
     else: 
         new_state = advance_turn(new_state)
 

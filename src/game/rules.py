@@ -82,26 +82,27 @@ def check_winner(state: GameState, flag: int) -> int | None:
         return 2
     else:
         return None  
-        
-def is_terminal(state: GameState) -> bool:
+
+def game_winner(state: GameState) -> int | None:
     for player in [1,2]:
-        player_flags = []
-
-        for flag, owner in state.claimed_flags.items():
-            if owner == player:
-                player_flags.append(flag)
-
-        player_flags = set(player_flags)
+        player_flags = {
+            flag for flag, owner in state.claimed_flags.items()
+            if owner == player
+        }
 
         if len(player_flags) >= 5:
-            return True
+            return player
         
-        elif len(player_flags) >= 3:
-            for start in range(7):
-                if start in player_flags and \
-                start + 1 in player_flags and \
-                start + 2 in player_flags:
-                    return True
+        for start in range(1,8):
+            if (
+                start in player_flags
+                and start + 1 in player_flags
+                and start + 2 in player_flags
+            ):
+                return player
+            
+    return None
         
-    return False
+def is_terminal(state: GameState) -> bool:
+    return game_winner(state) is not None
     
