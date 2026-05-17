@@ -10,3 +10,6 @@ from dataclasses import dataclass
 class Card:
     color: str
     value: int
+    
+    def __str__(self) -> str:
+        return f"{self.color}-{self.value}"

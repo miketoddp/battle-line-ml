@@ -4,10 +4,9 @@ Main script for Battle Line game.
 Calls other functions and performs tests
 """
 
-from game.deck import create_deck, shuffle_deck, deal_hands
 from game.engine import initialize_game, apply_move
 from game.rules import legal_moves, formation_rank
-import random
+from agents.random_agent import RandomAgent
 
 def main():
 # tests for deck creation (pre-initialize)
@@ -22,17 +21,27 @@ def main():
     state = initialize_game()
     last_move = None
 
+    agent1 = RandomAgent()
+    agent2 = RandomAgent()
+
     while not state.terminal:
         moves = legal_moves(state)
 
         if not moves:
             print("No legal moves available.")
-            break 
+            break
 
-        move = random.choice(moves)
+        agent = agent1 if state.current_player == 1 else agent2
+        move = agent.choose_move(state) 
         last_move = move
 
-        print(f"Player {state.current_player} plays {move}")
+        # move = random.choice(moves)
+
+        card = state.hands[move.player_id][move.card_index]
+
+        print(f"Player {state.current_player} plays "
+              f"{str(card)} to flag {move.target_flag}")
+        
         state = apply_move(state, move)
 
     print("Claimed flags: ", state.claimed_flags)
