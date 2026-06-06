@@ -52,7 +52,7 @@ def main():
         if owner == state.winner
     ]
     
-    print("Winner claimed final flag(s): ", winner_flags)
+    print("Winner claimed flag(s): ", winner_flags)
 
     if last_move is not None:
         flag = last_move.target_flag

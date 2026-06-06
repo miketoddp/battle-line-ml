@@ -50,6 +50,13 @@ class HeuristicAgent:
                 score += 6
             elif rank == 4:
                 score += 5
+            
+        # reward development of wedges via adjacent cards of same color
+        # use abs(...) <= 2 if 2-point value gaps are OK
+        if len(own_formation) == 1:
+            if card.color == own_formation[0].color and \
+            abs(card.value - own_formation[0].value) == 1:
+                score += 4
         
         # penalize plays against strong full opponent formations
         if len(opp_formation) == 3:
