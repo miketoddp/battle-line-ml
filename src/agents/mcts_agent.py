@@ -20,29 +20,31 @@ Specifically:
 from game.state import GameState
 from game.move import Move
 from mcts.node import Node
-from math import sqrt, log
+from math import log
 
 
 class MCTSAgent:
-    def choose_move(self, state: GameState, simcount: int = 100) -> Move:
+    def __init__(self, simcount: int = 100):
+        self.simcount = simcount
+    
+    def choose_move(self, state: GameState) -> Move:
         root_player = state.current_player
         root_node = Node(state)
 
-        for i in range(simcount):
+        for _ in range(self.simcount):
             node = self.select_node(root_node)
 
             if node.untried_moves:
                 node = self.expand_node(node)
 
             final_state = self.rollout(node.state)
-
             reward = 1 if final_state.winner == root_player else 0
 
+            # choose the root child explored most often and return its move
             self.backpropagate(node, reward)
-        
-            # choose one child of `root_node` via UCB1 and return its `move`
+
         if not root_node.children:
-                raise ValueError("MCTS found no child node.")
+            raise ValueError("MCTS found no child node.")
         
         best_child = max(root_node.children, key=lambda child: child.visits)
         # lambda function equivalent to for-loop comparison on child.visits
@@ -54,9 +56,11 @@ class MCTSAgent:
             
 
     def select_node(self, node: Node) -> Node:
-        # selects promising node
+        # selects promising node -- aka, a "tree policy"
         # via UCB1 = (child.wins / child.visits) + sqrt(log(node.visits) / child.visits)
-        # c = sqrt(2)
+        # c = sqrt(2) ~ 1.414
+        # use if child.visits == -:
+            # return float("inf") ... so that unvisited children get tried.
         return node
 
     def expand_node(self, node: Node):
