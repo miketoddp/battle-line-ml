@@ -17,10 +17,12 @@ Specifically:
 - return best child's move
 """
 
-from game.state import GameState
+import random  
+from game.engine import apply_move
 from game.move import Move
+from game.state import GameState
 from mcts.node import Node
-from math import log
+from math import log, sqrt
 
 
 class MCTSAgent:
@@ -59,13 +61,52 @@ class MCTSAgent:
         # selects promising node -- aka, a "tree policy"
         # via UCB1 = (child.wins / child.visits) + sqrt(log(node.visits) / child.visits)
         # c = sqrt(2) ~ 1.414
-        # use if child.visits == -:
-            # return float("inf") ... so that unvisited children get tried.
-        return node
+        # use if child.visits == 0:
+            # return float("-inf") ... so that unvisited children get tried.
 
-    def expand_node(self, node: Node):
+        if not node.children:
+            return node
+
+        best_score = float("-inf") # unvisited children get tried
+        best_node: Node | None = None
+
+        for child in node.children:
+            if child.visits == 0:
+                return child
+            
+            child_score = (
+                (child.wins / child.visits)
+                + 1.414 * sqrt(log(node.visits) / child.visits)
+            )
+            
+            if child_score > best_score:
+                best_score = child_score
+                best_node = child
+        
+        if best_node is None:
+            return node
+        
+        return best_node
+
+    def expand_node(self, node: Node) -> Node:
         # expands selected node if possible
-        return node
+        if not node.untried_moves:
+            return node
+    
+        # select random untried move and remove it from untried_moves list        
+        candidate = random.choice(node.untried_moves)
+        node.untried_moves.remove(candidate)
+
+        # apply move to node.state, create new node with resulting state
+        new_node = Node(
+            state=apply_move(node.state, candidate),
+            parent=node,
+            move=candidate
+        )
+        
+        node.children.append(new_node)
+
+        return new_node
     
     def rollout(self, state: GameState):
         # plays a selected state to completion
