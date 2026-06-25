@@ -14,14 +14,16 @@ Specifically:
   -- expand if possible
   -- rollout to the end
   -- backpropagate result
-- return best child's move
+- return the most-visited child node's move
 """
 
 import random  
 from game.engine import apply_move
 from game.move import Move
 from game.state import GameState
+from game.rules import legal_moves
 from mcts.node import Node
+from agents.random_agent import RandomAgent
 from math import log, sqrt
 
 
@@ -39,10 +41,10 @@ class MCTSAgent:
             if node.untried_moves:
                 node = self.expand_node(node)
 
+            # simulate from selected/expanded node...
+            # ...and score result from root player's perspective
             final_state = self.rollout(node.state)
             reward = 1 if final_state.winner == root_player else 0
-
-            # choose the root child explored most often and return its move
             self.backpropagate(node, reward)
 
         if not root_node.children:
@@ -58,33 +60,36 @@ class MCTSAgent:
             
 
     def select_node(self, node: Node) -> Node:
-        # selects promising node -- aka, a "tree policy"
-        # via UCB1 = (child.wins / child.visits) + sqrt(log(node.visits) / child.visits)
+        # selects promising node one level down via UCB1:
+        # ... (child.wins / child.visits) + c * sqrt(log(node.visits) / child.visits)
         # c = sqrt(2) ~ 1.414
-        # use if child.visits == 0:
-            # return float("-inf") ... so that unvisited children get tried.
 
-        if not node.children:
+        # return current node for expansion if there are untried moves
+        if node.untried_moves:
             return node
-
-        best_score = float("-inf") # unvisited children get tried
-        best_node: Node | None = None
-
-        for child in node.children:
-            if child.visits == 0:
-                return child
-            
-            child_score = (
-                (child.wins / child.visits)
-                + 1.414 * sqrt(log(node.visits) / child.visits)
-            )
-            
-            if child_score > best_score:
-                best_score = child_score
-                best_node = child
-        
-        if best_node is None:
+        # also return current node if it has no children
+        elif not node.children:
             return node
+        else:
+            best_score = float("-inf")
+            best_node: Node | None = None
+
+            for child in node.children:
+                # if child.visits == 0, return that child immediately
+                if child.visits == 0:
+                    return child
+                
+                child_score = (
+                    (child.wins / child.visits)
+                    + sqrt(2) * sqrt(log(node.visits) / child.visits)
+                )
+                
+                if child_score > best_score:
+                    best_score = child_score
+                    best_node = child
+            
+            if best_node is None:
+                return node
         
         return best_node
 
@@ -108,10 +113,30 @@ class MCTSAgent:
 
         return new_node
     
-    def rollout(self, state: GameState):
+    def rollout(self, state: GameState) -> GameState:
         # plays a selected state to completion
-        ...
-        return state
+        rollout_state = state
+        agent = RandomAgent()
 
-    def backpropagate(self, node: Node, reward):
-        ...
+        while not rollout_state.terminal:
+            moves = legal_moves(rollout_state)
+
+            if not moves:
+                break
+
+            next_move = agent.choose_move(state=rollout_state)
+            rollout_state = apply_move(state=rollout_state, move=next_move)
+
+        return rollout_state
+
+    def backpropagate(self, node: Node, reward: int = 1) -> None:
+        # updates every node from the rollout node back to the root
+        # move up the tree until there is no parent
+        # root node gets updated too
+
+        current_node = node
+
+        while current_node is not None:
+            current_node.visits += 1
+            current_node.wins += reward # assumes root player's perspective
+            current_node = current_node.parent
