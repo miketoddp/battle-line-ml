@@ -11,6 +11,7 @@ from game.engine import initialize_game, apply_move
 from game.rules import legal_moves, formation_rank
 from agents.random_agent import RandomAgent
 from agents.heuristic_agent import HeuristicAgent
+from agents.mcts_agent import MCTSAgent
 
 def play_game(agent1, agent2) -> int | None:
     state = initialize_game()
@@ -27,18 +28,31 @@ def play_game(agent1, agent2) -> int | None:
 
     return state.winner
 
-def run_tournament(n_games: int = 100):
+def run_tournament(agent1, agent2, n_games: int = 100):
     results = {1: 0, 2: 0, None: 0}
 
     for _ in range(n_games):
-        winner = play_game(
-            agent1 = RandomAgent(),
-            agent2 = HeuristicAgent()
-        )
+        winner = play_game(agent1,agent2)
         results[winner] += 1
     
-    print(results)
+    return results
+
+def main():
+    n_games = 50
+
+    print("MCTS vs Random")
+    print(run_tournament(MCTSAgent(simcount=100), RandomAgent(), n_games))
+
+    print("Random vs MCTS")
+    print(run_tournament(RandomAgent(), MCTSAgent(simcount=100), n_games))
+
+    print("MCTS vs Heuristic")
+    print(run_tournament(MCTSAgent(simcount=100), HeuristicAgent(), n_games))
+
+    print("Heuristic vs MCTS")
+    print(run_tournament(HeuristicAgent(), MCTSAgent(simcount=100), n_games))
 
 if __name__ == "__main__":
-    run_tournament(100)
+    main()          
+
 

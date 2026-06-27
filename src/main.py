@@ -23,7 +23,7 @@ def main():
     state = initialize_game()
     last_move = None
 
-    agent1 = MCTSAgent(simcount=10)
+    agent1 = MCTSAgent(simcount=100)
     agent2 = RandomAgent()
 
     while not state.terminal:
