@@ -50,8 +50,8 @@ class MCTSAgent:
         if not root_node.children:
             raise ValueError("MCTS found no child node.")
         
+        # choose the root child explored most often (equivalent to for-loop comparison)
         best_child = max(root_node.children, key=lambda child: child.visits)
-        # lambda function equivalent to for-loop comparison on child.visits
         
         if best_child.move is None:
             raise ValueError("Best child has no move.") # implementation check
@@ -60,39 +60,50 @@ class MCTSAgent:
             
 
     def select_node(self, node: Node) -> Node:
-        # selects promising node one level down via UCB1:
-        # ... (child.wins / child.visits) + c * sqrt(log(node.visits) / child.visits)
+        # walks down the existing tree using UCB1.
+        # stops at a terminal node, one with untried moves, or one with no children
+        # UCB1: (child.wins / child.visits) + c * sqrt(log(node.visits) / child.visits)
         # c = sqrt(2) ~ 1.414
 
-        # return current node for expansion if there are untried moves
-        if node.untried_moves:
-            return node
-        # also return current node if it has no children
-        elif not node.children:
-            return node
-        else:
-            best_score = float("-inf")
-            best_node: Node | None = None
+        while not node.state.terminal and not node.untried_moves and node.children:
+            best_child = self.best_ucb_child(node)
 
-            for child in node.children:
-                # if child.visits == 0, return that child immediately
-                if child.visits == 0:
-                    return child
-                
-                child_score = (
-                    (child.wins / child.visits)
-                    + sqrt(2) * sqrt(log(node.visits) / child.visits)
-                )
-                
-                if child_score > best_score:
-                    best_score = child_score
-                    best_node = child
+            ## obviated with checks included in best_ucb_child
+            # if best_child is None:
+            #     return node
             
-            if best_node is None:
-                return node
+            node = best_child
+
+        return node
+
+    def best_ucb_child(self, node: Node) -> Node:
+        # guard against failure if no children
+        if not node.children:
+            raise ValueError("Cannot select UCB child from node with no children.")
+        
+        # guard against failure of log(node.visits)
+        if node.visits == 0:
+            return random.choice(node.children)
+        
+        best_score = float("-inf")
+        best_node = node.children[0]
+        
+        for child in node.children:
+            # if child.visits == 0, return that child immediately
+            if child.visits == 0:
+                return child
+            
+            child_score = (
+                (child.wins / child.visits)
+                + sqrt(2) * sqrt(log(node.visits) / child.visits)
+            )
+            
+            if child_score > best_score:
+                best_score = child_score
+                best_node = child
         
         return best_node
-
+    
     def expand_node(self, node: Node) -> Node:
         # expands selected node if possible
         if not node.untried_moves:
