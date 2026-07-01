@@ -23,6 +23,7 @@ from game.move import Move
 from game.state import GameState
 from game.rules import legal_moves
 from mcts.node import Node
+from mcts.determinization import determinize_state
 from agents.random_agent import RandomAgent
 from math import log, sqrt
 
@@ -33,22 +34,28 @@ class MCTSAgent:
     
     def choose_move(self, state: GameState) -> Move:
         root_player = state.current_player
-        root_node = Node(state)
+        # root_node = Node(state) # removed after determinization included
+        move_stats = {}
 
         for _ in range(self.simcount):
-            node = self.select_node(root_node)
+            fresh_state = determinize_state(state, root_player)
+            fresh_root = Node(fresh_state)
+
+            node = self.select_node(fresh_root)
 
             if node.untried_moves:
-                node = self.expand_node(node)
+                child = self.expand_node(node)
+                root_move = child.move
 
-            # simulate from selected/expanded node...
-            # ...and score result from root player's perspective
-            final_state = self.rollout(node.state)
-            reward = 1 if final_state.winner == root_player else 0
+                # simulate from selected/expanded node...
+                # ...and score result from root player's perspective
+                final_state = self.rollout(child.state)
+                reward = 1 if final_state.winner == root_player else 0
             self.backpropagate(node, reward)
 
-        if not root_node.children:
-            raise ValueError("MCTS found no child node.")
+        ## removed after determinization included
+        # if not root_node.children:
+        #     raise ValueError("MCTS found no child node.")
         
         # choose the root child explored most often (equivalent to for-loop comparison)
         best_child = max(root_node.children, key=lambda child: child.visits)
@@ -56,6 +63,7 @@ class MCTSAgent:
         if best_child.move is None:
             raise ValueError("Best child has no move.") # implementation check
 
+        assert best_child.move in legal_moves(state)
         return best_child.move
             
 
