@@ -29,43 +29,53 @@ from math import log, sqrt
 
 
 class MCTSAgent:
-    def __init__(self, simcount: int = 100):
+    def __init__(self, simcount: int = 10, 
+                 num_determinizations: int = 5):
         self.simcount = simcount
+        self.num_determinizations = num_determinizations
     
     def choose_move(self, state: GameState) -> Move:
         root_player = state.current_player
         # root_node = Node(state) # removed after determinization included
-        move_stats = {}
+        move_stats: dict[Move, dict[str, float]] = {} # float used in case of draws, later
 
-        for _ in range(self.simcount):
+        for _ in range(self.num_determinizations):
             fresh_state = determinize_state(state, root_player)
             fresh_root = Node(fresh_state)
 
-            node = self.select_node(fresh_root)
+            for _ in range(self.simcount):
+                node = self.select_node(fresh_root)
 
-            if node.untried_moves:
-                child = self.expand_node(node)
-                root_move = child.move
+                if node.untried_moves:
+                    node = self.expand_node(node)
 
                 # simulate from selected/expanded node...
                 # ...and score result from root player's perspective
-                final_state = self.rollout(child.state)
+                final_state = self.rollout(node.state)
                 reward = 1 if final_state.winner == root_player else 0
-            self.backpropagate(node, reward)
+                self.backpropagate(node, reward)
 
-        ## removed after determinization included
-        # if not root_node.children:
-        #     raise ValueError("MCTS found no child node.")
-        
-        # choose the root child explored most often (equivalent to for-loop comparison)
-        best_child = max(root_node.children, key=lambda child: child.visits)
-        
-        if best_child.move is None:
-            raise ValueError("Best child has no move.") # implementation check
+            # within mini-tree, choose the root child explored most often
+            # ...(equivalent to for-loop comparison)
+            if not fresh_root.children:
+                continue
 
-        assert best_child.move in legal_moves(state)
-        return best_child.move
+            best_child = max(fresh_root.children, key=lambda child: child.visits)
+
+            if best_child.move is None:
+                raise ValueError("Best child has no move.") # implementation check
             
+            assert best_child.move in legal_moves(state)
+            self.record_move_stats(move_stats=move_stats, move=best_child.move, 
+                                   visits=best_child.visits, wins=best_child.wins)
+
+        if not move_stats:
+            raise ValueError("Move stats were not created.")
+        
+        best_move = max(move_stats, key=lambda move: move_stats[move]["wins"] /
+                        move_stats[move]["visits"])
+        
+        return best_move
 
     def select_node(self, node: Node) -> Node:
         # walks down the existing tree using UCB1.
@@ -159,3 +169,12 @@ class MCTSAgent:
             current_node.visits += 1
             current_node.wins += reward # assumes root player's perspective
             current_node = current_node.parent
+
+    def record_move_stats(self, move_stats: dict[Move, dict[str, float]], 
+                          move: Move, visits: int, wins: int) -> None:
+        
+        if move not in move_stats:
+            move_stats[move] = {"visits": 0, "wins": 0}
+        
+        move_stats[move]["visits"] += visits
+        move_stats[move]["wins"] += wins

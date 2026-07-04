@@ -41,16 +41,16 @@ def main():
     n_games = 50
 
     print("MCTS vs Random")
-    print(run_tournament(MCTSAgent(simcount=100), RandomAgent(), n_games))
+    print(run_tournament(MCTSAgent(), RandomAgent(), n_games))
 
     print("Random vs MCTS")
-    print(run_tournament(RandomAgent(), MCTSAgent(simcount=100), n_games))
+    print(run_tournament(RandomAgent(), MCTSAgent(), n_games))
 
     print("MCTS vs Heuristic")
-    print(run_tournament(MCTSAgent(simcount=100), HeuristicAgent(), n_games))
+    print(run_tournament(MCTSAgent(), HeuristicAgent(), n_games))
 
     print("Heuristic vs MCTS")
-    print(run_tournament(HeuristicAgent(), MCTSAgent(simcount=100), n_games))
+    print(run_tournament(HeuristicAgent(), MCTSAgent(), n_games))
 
 if __name__ == "__main__":
     main()          
