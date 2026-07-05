@@ -2,6 +2,8 @@
 Stores MCTS bookkeeping information for Battle Line rollouts. 
 
 Initially imagined with perfect information (deck, opponent hands, etc.).
+
+Determinization function added to establish more realistic hidden information.
 """
 
 from game.state import GameState

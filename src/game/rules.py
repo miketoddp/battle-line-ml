@@ -11,7 +11,6 @@ Called by `engine.py`.
 from game.cards import Card
 from game.move import Move
 from game.state import GameState
-from copy import deepcopy
 
 def legal_moves(state: GameState) -> list[Move]:
     moves = []
