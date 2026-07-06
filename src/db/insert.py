@@ -1,0 +1,61 @@
+"""
+Helper function to write rows for Battle Line games and moves.
+"""
+
+import sqlite3
+from game.move import Move
+from game.cards import Card
+
+def create_game(connection, agent1: str, agent2: str) -> int:
+    # insert row into `games` with agent1 and agent2
+    cursor = connection.cursor()
+    cursor.execute(
+        """
+        INSERT INTO games (agent1, agent2) 
+        VALUES (?, ?)
+        """,
+        (agent1, agent2)
+    )
+    connection.commit()
+
+    # return new game_id
+    game_id = cursor.lastrowid
+    return game_id
+
+def record_move(connection, game_id: int, turn_number: int,
+                move: Move, card: Card) -> None:
+
+    player_id = move.player_id
+    card_index = move.card_index
+    target_flag = move.target_flag
+    card_color = card.color
+    card_value = card.value
+    
+    cursor = connection.cursor()
+    cursor.execute(
+        """
+        INSERT INTO moves (game_id, turn_number, player_id, card_index,
+        target_flag, card_color, card_value)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        """,
+        (game_id, turn_number, player_id, card_index, target_flag,
+         card_color, card_value)
+    )
+    connection.commit()
+
+def finish_game(connection, game_id: int, winner: int | None,
+                total_turns: int) -> None:
+    
+    cursor = connection.cursor()
+    cursor.execute(
+        """
+        UPDATE games
+        SET winner = ?, total_turns = ?
+        WHERE game_id = ?
+        """,
+        (winner, total_turns, game_id)
+    )
+    connection.commit()
+    
+
+
