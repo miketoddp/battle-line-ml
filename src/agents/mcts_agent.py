@@ -29,8 +29,8 @@ from math import log, sqrt
 
 
 class MCTSAgent:
-    def __init__(self, simcount: int = 10, 
-                 num_determinizations: int = 5):
+    def __init__(self, simcount: int = 20, 
+                 num_determinizations: int = 10):
         self.simcount = simcount
         self.num_determinizations = num_determinizations
     
