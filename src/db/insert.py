@@ -56,6 +56,23 @@ def finish_game(connection, game_id: int, winner: int | None,
         (winner, total_turns, game_id)
     )
     connection.commit()
-    
+
+if __name__ == "__main__":
+    from db.sqlite_manager import get_connection
+    from game.move import Move
+    from game.cards import Card
+
+    con = get_connection()
+
+    game_id = create_game(con, "TestAgent1", "TestAgent2")
+
+    move = Move(player_id=1, card_index=3, target_flag=5)
+    card = Card(color="red", value=7)
+
+    record_move(con, game_id, turn_number=0, move=move, card=card)
+
+    finish_game(con, game_id, winner=1, total_turns=1)
+
+    con.close()
 
 
