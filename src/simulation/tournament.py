@@ -75,32 +75,45 @@ def run_tournament(agent1, agent2, n_games: int = 100):
     
     return results
 
-# def main():
-#     n_games = 50
+def run_logged_tournament(agent1, agent2, n_games: int = 50):
+    results = {1: 0, 2: 0, None: 0}
 
-#     print("MCTS vs Random")
-#     print(run_tournament(MCTSAgent(), RandomAgent(), n_games))
-
-#     print("Random vs MCTS")
-#     print(run_tournament(RandomAgent(), MCTSAgent(), n_games))
-
-#     print("MCTS vs Heuristic")
-#     print(run_tournament(MCTSAgent(), HeuristicAgent(), n_games))
-
-#     print("Heuristic vs MCTS")
-#     print(run_tournament(HeuristicAgent(), MCTSAgent(), n_games))
-
-def main():
     connection = get_connection()
 
-    winner = play_and_log(
-        agent1=RandomAgent(),
-        agent2=HeuristicAgent(),
-        connection=connection
-    )
+    for _ in range(n_games):
+        winner = play_and_log(agent1,
+                              agent2,
+                              connection=connection)
+        results[winner] += 1
 
     connection.close()
-    print("Logged one game. Winner: ", winner)
+    return results
+    
+# def main():
+#     connection = get_connection()
+
+#     winner = play_and_log(
+#         agent1=RandomAgent(),
+#         agent2=HeuristicAgent(),
+#         connection=connection
+#     )
+    
+#     connection.close()
+#     print("Logged one game. Winner: ", winner)
+
+def main():
+
+    print("MCTS vs Random")
+    print(run_logged_tournament(MCTSAgent(), RandomAgent(), n_games=5))
+
+    print("Random vs MCTS")
+    print(run_logged_tournament(RandomAgent(), MCTSAgent(), n_games=5))
+
+    print("MCTS vs Heuristic")
+    print(run_logged_tournament(MCTSAgent(), HeuristicAgent(), n_games=5))
+
+    print("Heuristic vs MCTS")
+    print(run_logged_tournament(HeuristicAgent(), MCTSAgent(), n_games=5))
 
 if __name__ == "__main__":
     main()          
