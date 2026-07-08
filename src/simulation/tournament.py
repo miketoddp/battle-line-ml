@@ -104,16 +104,16 @@ def run_logged_tournament(agent1, agent2, n_games: int = 50):
 def main():
 
     print("MCTS vs Random")
-    print(run_logged_tournament(MCTSAgent(), RandomAgent(), n_games=5))
+    print(run_logged_tournament(MCTSAgent(), RandomAgent(), n_games=10))
 
     print("Random vs MCTS")
-    print(run_logged_tournament(RandomAgent(), MCTSAgent(), n_games=5))
+    print(run_logged_tournament(RandomAgent(), MCTSAgent(), n_games=10))
 
     print("MCTS vs Heuristic")
-    print(run_logged_tournament(MCTSAgent(), HeuristicAgent(), n_games=5))
+    print(run_logged_tournament(MCTSAgent(), HeuristicAgent(), n_games=10))
 
     print("Heuristic vs MCTS")
-    print(run_logged_tournament(HeuristicAgent(), MCTSAgent(), n_games=5))
+    print(run_logged_tournament(HeuristicAgent(), MCTSAgent(), n_games=10))
 
 if __name__ == "__main__":
     main()          
