@@ -30,6 +30,6 @@ SELECT
         WHEN g.winner = 2 THEN g.agent2
         ELSE "Draw"
     END AS winning_agent,
-    g.total_turns
+    g.total_turns,
     g.created_at
 FROM games g;
