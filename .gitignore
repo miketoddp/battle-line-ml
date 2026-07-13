@@ -4,9 +4,10 @@ __pycache__/
 *.pyo
 *.pyd
 
-# Virtual environments
+# Virtual environments and VS Code
 venv/
 .env/
+.vscode/settings.json
 
 # MacOS
 .DS_Store
